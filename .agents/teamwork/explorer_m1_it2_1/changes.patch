@@ -1,0 +1,182 @@
+diff --git a/src/audio/types.ts b/src/audio/types.ts
+--- a/src/audio/types.ts
++++ b/src/audio/types.ts
+@@ -113,4 +113,5 @@ export interface TTSQueueItem {
+   onComplete?: () => void;
+   onError?: (err: Error) => void;
++  aborted?: boolean;
+ }
+ 
+diff --git a/src/audio/tts.ts b/src/audio/tts.ts
+--- a/src/audio/tts.ts
++++ b/src/audio/tts.ts
+@@ -10,3 +10,6 @@ export function generateSyntheticPcmTone(
+ ): Buffer {
++  if (!durationMs || durationMs <= 0 || !Number.isFinite(durationMs)) {
++    return Buffer.alloc(0);
++  }
+   const bytesPerMs = (sampleRate * channels * 2) / 1000;
+   const totalBytes = Math.floor(durationMs * bytesPerMs);
++  if (totalBytes <= 0) {
++    return Buffer.alloc(0);
++  }
+   const buffer = Buffer.alloc(totalBytes);
+diff --git a/src/audio/queue.ts b/src/audio/queue.ts
+--- a/src/audio/queue.ts
++++ b/src/audio/queue.ts
+@@ -19,2 +19,3 @@ export class AudioQueueManager extends EventEmitter implements IAudioQueueManager {
+   private isProcessing = false;
++  private currentGeneration = 0;
+ 
+@@ -32,6 +33,3 @@ export class AudioQueueManager extends EventEmitter implements IAudioQueueManager {
+     this.player.on('error', (err: any) => {
+-      if (this.currentItem?.onError) {
+-        this.currentItem.onError(err);
+-      }
+-      this.handlePlaybackComplete();
++      this.handlePlaybackError(err);
+     });
+@@ -60,3 +58,3 @@ export class AudioQueueManager extends EventEmitter implements IAudioQueueManager {
+-    // Put emergency at the very front of the queue
+-    this.queue.unshift(emergencyItem);
++    // Insert emergency item in chronological FIFO order among emergency items
++    this.insertSorted(emergencyItem);
+ 
+     if (this.currentItem && this.currentItem.priority !== AudioPriority.EMERGENCY) {
+       // Preempt active non-emergency playback
+       const preempted = this.currentItem;
++      preempted.aborted = true;
++      this.currentGeneration++;
+       this.currentItem = null;
+@@ -78,4 +78,5 @@ export class AudioQueueManager extends EventEmitter implements IAudioQueueManager {
+   private insertSorted(item: TTSQueueItem): void {
++    const itemCreated = item.createdAt ?? 0;
+     const index = this.queue.findIndex(
+       (existing) =>
+         existing.priority > item.priority ||
+-        (existing.priority === item.priority && existing.createdAt > item.createdAt)
++        (existing.priority === item.priority && (existing.createdAt ?? 0) > itemCreated)
+     );
+@@ -96,2 +97,3 @@ export class AudioQueueManager extends EventEmitter implements IAudioQueueManager {
+     this.currentItem = nextItem;
++    const generation = ++this.currentGeneration;
+ 
+     try {
+       if (nextItem.onStart) {
+-        nextItem.onStart();
++        try {
++          nextItem.onStart();
++        } catch (startErr) {
++          this.emit('error', startErr);
++        }
+       }
+ 
+@@ -109,2 +113,6 @@ export class AudioQueueManager extends EventEmitter implements IAudioQueueManager {
+         audioBuffer = await this.ttsPipeline.synthesizeSpeech(nextItem.text, {
+           voiceName: (nextItem.metadata?.voiceName as string) || undefined,
+         });
++        if (nextItem.aborted || this.currentItem !== nextItem || this.currentGeneration !== generation) {
++          return;
++        }
+         nextItem.audioBuffer = audioBuffer;
+       }
+ 
++      if (nextItem.aborted || this.currentItem !== nextItem || this.currentGeneration !== generation) {
++        return;
++      }
++
+       this.emit('playingItem', nextItem);
+@@ -118,7 +126,5 @@ export class AudioQueueManager extends EventEmitter implements IAudioQueueManager {
+     } catch (err: any) {
+-      this.isProcessing = false;
+-      this.emit('error', err);
+-      if (nextItem.onError) {
+-        nextItem.onError(err);
++      if (nextItem.aborted || this.currentItem !== nextItem || this.currentGeneration !== generation) {
++        return;
+       }
+-      this.handlePlaybackComplete();
++      this.handlePlaybackError(err);
+     }
+   }
+ 
+   private handlePlaybackComplete(): void {
+-    if (this.currentItem) {
+-      if (this.currentItem.onComplete) {
+-        this.currentItem.onComplete();
+-      }
+-      this.emit('itemCompleted', this.currentItem);
+-      this.currentItem = null;
++    if (!this.currentItem) {
++      return;
+     }
++    const completedItem = this.currentItem;
++    this.currentItem = null;
++    this.isProcessing = false;
++    if (completedItem.onComplete) {
++      try {
++        completedItem.onComplete();
++      } catch (cbErr) {
++        this.emit('error', cbErr);
++      }
++    }
++    this.emit('itemCompleted', completedItem);
+     this.processNext();
+   }
+ 
++  private handlePlaybackError(err: any): void {
++    const failedItem = this.currentItem;
++    if (!failedItem) {
++      this.emit('error', err);
++      return;
++    }
++    this.currentItem = null;
++    this.isProcessing = false;
++    this.emit('error', err);
++    this.emit('itemFailed', { item: failedItem, error: err });
++    if (failedItem.onError) {
++      try {
++        failedItem.onError(err);
++      } catch (cbErr) {
++        this.emit('error', cbErr);
++      }
++    }
++    this.processNext();
++  }
++
+   public cancelNonEmergency(): void {
++    for (const item of this.queue) {
++      if (item.priority !== AudioPriority.EMERGENCY) {
++        item.aborted = true;
++      }
++    }
+     this.queue = this.queue.filter((item) => item.priority === AudioPriority.EMERGENCY);
+ 
+     if (this.currentItem && this.currentItem.priority !== AudioPriority.EMERGENCY) {
++      const cancelled = this.currentItem;
++      cancelled.aborted = true;
++      this.currentGeneration++;
+       this.player.stop(true);
+       this.currentItem = null;
++      this.isProcessing = false;
++      if (this.queue.length > 0) {
++        this.processNext();
++      }
+     }
+     this.emit('queueFiltered', 'non_emergency_cancelled');
+   }
+ 
+   public stopAll(): void {
++    for (const item of this.queue) {
++      item.aborted = true;
++    }
+     this.queue = [];
+     if (this.currentItem) {
++      this.currentItem.aborted = true;
+       this.currentItem = null;
+     }
++    this.currentGeneration++;
+     this.player.stop(true);
+     this.isProcessing = false;
+     this.emit('stoppedAll');
+   }
