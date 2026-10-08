@@ -108,3 +108,33 @@ Provide a comprehensive automated verification harness that can run in CI or loc
 - [ ] Gemini planner parses goals into valid tool calls and executes them against the Minecraft agent.
 - [ ] Mock harness validates the complete pipeline end-to-end without requiring live API keys or external servers.
 - [ ] `.env.example` and `README.md` are completely updated.
+
+
+## 2026-10-08T13:25:04Z
+
+Build and complete the multimodal Discord bot with text and two-way voice channel capabilities, integrated with an AI-driven agent capable of connecting to and playing inside a Minecraft server on command via natural language tool execution, operating strictly under fair-play survival rules.
+
+Working directory: c:/Users/rando/Documents/antigravity/wise-pasteur
+Integrity mode: development
+
+## Current Progress & State
+- Milestones 1, 2, and 3 are COMPLETED and verified:
+  - 26 test suites with 444/444 tests passing (100%), clean TypeScript build (`dist/`), git committed.
+  - Discord client, slash commands, voice receiver/player pipelines (STT/TTS), priority audio queue, anti-loopback chat bridge, status embeds, RBAC security (`src/discord/`, `src/audio/`, `src/bridge/`).
+  - Minecraft Fair-Play Engine with 3D DDA raycasting, 6-neighbor surface exposure anti-xray, 70° FOV cone, reach limits (≤4.5m block, ≤3.5m entity), hardened two-phase OP command tokenizer, pathfinding, 1.9+ combat cooldown, and auto-eat/sleep/equip survival loops (`src/minecraft/`).
+  - Gemini AI planner with official `@google/genai` (>= 2.3.0) client for `gemini-3.8-flash`, 9 structured fair-play tools, argument validators, multi-turn execution loop, Discord event coordination, and deterministic offline mock (`src/ai/`, `src/coordinator/`).
+
+## Milestone 4 Objectives (Execute Now)
+Execute Milestone 4 (Final E2E Test Verification & Hardening) in `c:/Users/rando/Documents/antigravity/wise-pasteur`:
+1. Offline Simulation Harness Infra (`test/harness/`):
+   - Implement `simulationHarness.ts` and `testContext.ts` connecting `mockDiscord`, `mockMinecraft`, and `mockGemini` into a unified offline test environment.
+2. Multi-Tier E2E Test Suites:
+   - Tier 1 Feature Coverage (`test/tier1_features/`): Isolated happy-path tests across all subsystem features.
+   - Tier 2 Boundaries & Edge Cases (`test/tier2_boundaries/`): Edge coordinates, reach limits, empty inventories, disconnections, latency, and timeouts.
+   - Tier 3 Cross-Feature Combinations (`test/tier3_combinations/`): Pairwise subsystem interactions (e.g. voice receiver -> STT -> Gemini tool call -> Minecraft action execution -> TTS response -> live status embed update).
+   - Tier 4 Real-World Application Scenarios (`test/tier4_scenarios/`): Complete user journeys and workflows without requiring live external secrets.
+3. 100% Pass Rate & Clean Build:
+   - Ensure all existing (444 tests) and new E2E tests pass 100% cleanly via `npm test`.
+   - Ensure `npm run build` compiles with 0 TypeScript errors.
+4. Victory Audit:
+   - Execute the Sentinel Victory Audit, update documentation, and certify completion against all original project requirements.
