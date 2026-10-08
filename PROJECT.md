@@ -107,11 +107,11 @@ The system is a decoupled, modular multimodal agent architecture integrating Dis
 
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| E2E | E2E Testing Track | Design test runner, mock harness, and 4-tier test suites (Tiers 1-4); publish `TEST_READY.md` | Survey complete | IN_PROGRESS |
-| M1 | Discord Core & Audio/Bridge Infrastructure | Project scaffold, configuration schema, slash commands, RBAC, live status embeds, chat bridge, voice receiver (STT), voice player (TTS), priority queue | Survey complete | IN_PROGRESS |
-| M2 | Minecraft Fair-Play Survival Engine | Mineflayer agent, perception raycasting (anti-xray, FOV), reach enforcement ($\le 4.5$m), command sanitizer (no OP), pathfinding, mining, crafting, combat, survival loops (eat, sleep, equip) | M1 contracts defined | PLANNED |
-| M3 | Gemini AI Planning & Coordination Bridge | `@google/genai` integration (`gemini-3.8-flash`), 9 fair-play tool schemas, tool execution engine, Discord coordination feedback, task abort handling | M1, M2 contracts defined | PLANNED |
-| M4 | Final E2E Test Verification & Hardening | Phase 1: 100% pass rate on E2E test suite (Tiers 1-4); Phase 2: Adversarial coverage hardening (Tier 5) | E2E, M1, M2, M3 | PLANNED |
+| E2E | E2E Testing Track | Design test runner, mock harness, and 4-tier test suites (Tiers 1-4); publish `TEST_READY.md` | Survey complete | COMPLETED |
+| M1 | Discord Core & Audio/Bridge Infrastructure | Project scaffold, configuration schema, slash commands, RBAC, live status embeds, chat bridge, voice receiver (STT), voice player (TTS), priority queue | Survey complete | COMPLETED |
+| M2 | Minecraft Fair-Play Survival Engine | Mineflayer agent, perception raycasting (anti-xray, FOV), reach enforcement ($\le 4.5$m), command sanitizer (no OP), pathfinding, mining, crafting, combat, survival loops (eat, sleep, equip) | M1 contracts defined | COMPLETED |
+| M3 | Gemini AI Planning & Coordination Bridge | `@google/genai` integration (`gemini-3.8-flash`), 9 fair-play tool schemas, tool execution engine, Discord coordination feedback, task abort handling | M1, M2 contracts defined | COMPLETED |
+| M4 | Final E2E Test Verification & Hardening | Phase 1: 100% pass rate on E2E test suite (Tiers 1-4); Phase 2: Adversarial coverage hardening (Tier 5) | E2E, M1, M2, M3 | COMPLETED |
 
 ---
 
