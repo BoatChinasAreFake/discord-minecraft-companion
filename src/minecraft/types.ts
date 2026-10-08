@@ -1,7 +1,16 @@
+import type { IMinecraftChatAgent } from '../bridge/types.js';
+
 export interface Vec3Location {
   x: number;
   y: number;
   z: number;
+}
+
+export interface Vec3 extends Vec3Location {
+  offset?(dx: number, dy: number, dz: number): Vec3;
+  distanceTo?(other: Vec3Location): number;
+  clone?(): Vec3;
+  floor?(): Vec3;
 }
 
 export interface MinecraftBotStatus {
@@ -64,7 +73,7 @@ export interface PathfindingOptions {
   range?: number;
 }
 
-export interface IMinecraftAgent {
+export interface IMinecraftAgent extends IMinecraftChatAgent {
   connect(config: MinecraftConnectionConfig): Promise<void>;
   disconnect(): Promise<void>;
   getStatus(): MinecraftBotStatus;

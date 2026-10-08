@@ -1,31 +1,32 @@
-# BRIEFING — 2026-10-07T19:08:20Z
+# BRIEFING — 2026-10-07T23:45:11Z
 
 ## Mission
-Orchestrate and oversee the development of the multimodal Discord Minecraft bot with voice channels and fair-play survival AI.
+Coordinate and oversee full implementation of Milestones 2, 3, and 4 for the multimodal Discord bot with fair-play Minecraft agent and Gemini AI planning bridge.
 
 ## 🔒 My Identity
 - Archetype: sentinel
 - Working directory: c:\Users\rando\Documents\antigravity\wise-pasteur\.agents\teamwork\sentinel
-- Orchestrator: e9cac3a4-2cab-4915-bfc4-a4488f13ddf5
-- Victory Auditor: to be spawned on victory claim
+- Orchestrator: e026c1ee-5533-4b5b-93ce-229eafdae44b (orchestrator_2)
+- Victory Auditor: [to be spawned on victory claim]
 
 ## 🔒 Key Constraints
 - No technical decisions — relay only
 - Victory Audit is MANDATORY before reporting completion
-- Must not write code, analyze problems, or make technical decisions
-- Keep context ultra-light
+- Never report completion without VICTORY CONFIRMED verdict
+- Do not write code directly; keep context ultra-light
 
 ## User Context
-- **Last user request**: Build multimodal Discord bot with text and two-way voice channel capabilities, integrated with an AI-driven agent capable of connecting to and playing inside a Minecraft server on command via natural language tool execution, operating strictly under fair-play survival rules.
+- **Last user request**: Resume and execute Milestones 2-4 (Minecraft fair-play engine, Gemini tool calling, automated harness & E2E verification).
 - **Pending clarifications**: none
-- **Delivered results**: none
+- **Delivered results**: Milestone 1 complete (14 test suites, 140/140 tests passing).
 
 ## Project Status
 - **Phase**: in progress
-- **Active Path**: General (`teamwork_preview_orchestrator`)
-- **Crons Active**:
-  - Cron 1 (Progress Reporting, `*/8 * * * *`): task-14
-  - Cron 2 (Liveness Check, `*/10 * * * *`): task-16
+- **Route**: General (teamwork_preview_orchestrator)
+- **Active Subagents**: orchestrator_2 (e026c1ee-5533-4b5b-93ce-229eafdae44b)
+- **Scheduled Tasks**:
+  - Cron 1 (Progress Reporting */8m): task-30
+  - Cron 2 (Liveness Check */10m): task-32
 
 ## Victory Audit Status
 - **Triggered**: no
@@ -33,4 +34,6 @@ Orchestrate and oversee the development of the multimodal Discord Minecraft bot 
 - **Retry count**: 0
 
 ## Artifact Index
-- .agents/teamwork/ORIGINAL_REQUEST.md — Authoritative record of user requirements
+- ORIGINAL_REQUEST.md — Authoritative user intent and acceptance criteria
+- .agents/teamwork/ORIGINAL_REQUEST.md — Mirror of user intent
+- .agents/teamwork/orchestrator_2/ — Orchestrator workspace

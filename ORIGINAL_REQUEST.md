@@ -60,3 +60,51 @@ Provide a comprehensive automated verification harness that can run in CI or loc
 ### Configuration & Documentation
 - [ ] `.env.example` provides explicit documentation for all required settings (Discord token, client ID, channel IDs, allowed roles, Gemini API key, Minecraft server host/port/version).
 - [ ] `README.md` documents setup, running tests with mocks, and launching the live bot.
+
+## 2026-10-07T23:45:11Z
+
+Build and complete the multimodal Discord bot with text and two-way voice channel capabilities, integrated with an AI-driven agent capable of connecting to and playing inside a Minecraft server on command via natural language tool execution, operating strictly under fair-play survival rules.
+
+Working directory: c:/Users/rando/Documents/antigravity/wise-pasteur
+Integrity mode: development
+
+## Current Progress & State
+- Milestone 1 is COMPLETED and verified: 14 test suites with 140/140 tests passing (100%), clean TypeScript build (`dist/`), git committed. Includes Discord client, slash commands, voice receiver/player pipelines (STT/TTS), priority audio queue, anti-loopback chat bridge, and RBAC security.
+- Immediate Objectives: Resume and execute Milestone 2 (Minecraft Fair-Play Engine), Milestone 3 (Gemini AI Planning Bridge), and Milestone 4 (E2E Verification & Hardening) in `c:/Users/rando/Documents/antigravity/wise-pasteur`.
+
+## Requirements to Implement
+
+### R2. Minecraft Gameplay Agent Engine & Fair-Play Constraints (Milestone 2)
+Implement a Minecraft client agent using TypeScript/Mineflayer capable of joining standard Minecraft Java edition servers:
+- Strict Fair-Play & Anti-Cheat (MANDATORY): The AI is strictly prohibited from cheating or obtaining information that cannot be determined from regular gameplay:
+  - Surface exposure checks (`src/minecraft/perception/exposure.ts`) and 3D line-of-sight raycasting (`src/minecraft/perception/raycast.ts`). The bot must never scan through solid walls or inspect underground chunks for hidden ores, caves, or chests. It must discover resources legitimately through visible line-of-sight, surface exposure, and step-by-step mining.
+  - Perception FOV: $70^\circ$ focal FOV cone with $2.5$m near-field tactile fallback (`src/minecraft/perception/fov.ts`).
+  - No Privileged Commands: Command sanitizer (`src/minecraft/fairplay/commandSanitizer.ts`) blocking all OP privileges (`/tp`, `/give`, `/gamemode`, etc.).
+  - Physical Reach Limits: Reach limits strictly clamped to $\le 4.5$m for block interactions and $\le 3.5$m for entity combat (`src/minecraft/fairplay/reach.ts`).
+- Foundational Capabilities: Mineflayer pathfinding navigation with safe drop/hazard penalties (`src/minecraft/actions/pathfinding.ts`), mining with harvest tier checks (`src/minecraft/actions/mining.ts`), inventory management & crafting (`src/minecraft/actions/inventory.ts`, `crafting.ts`), and combat with 1.9+ attack cooldown timing and shield protection (`src/minecraft/actions/combat.ts`).
+- Automated Survival Loops: Auto-eating when hunger or health drops (`src/minecraft/loops/autoEat.ts`), sleeping in nearby beds at night with mob exclusion checks (`src/minecraft/loops/autoSleep.ts`), and auto-equipping optimal gear via composite defense scoring (`src/minecraft/loops/autoEquip.ts`).
+- Offline Mock: Implement `test/mocks/mockMinecraft.ts` with an in-memory voxel world and event emitter bot to support 100% offline verification.
+
+### R3. Natural Language AI Tool-Calling & Coordination (Milestone 3)
+Integrate an LLM planning agent (`src/ai/`) using the official Google Gemini SDK (`@google/genai` >= 2.3.0) configured for `gemini-3.8-flash`:
+- 9 Structured Fair-Play Tool Declarations: `goToCoordinates`, `followPlayer`, `gatherResource`, `defendArea`, `reportStatus`, `stopCurrentTask`, `craftItem`, `sleepInBed`, `depositOrRetrieve`.
+- Validation Interceptor: Intercept and validate all tool parameters against fair-play survival limits.
+- Decomposition & Execution Loop: Multi-turn tool execution loop reporting progress events back to Discord text/voice channels.
+- Emergency Halt: Support task cancellation via `/stop` slash command and emergency voice interrupts.
+- Offline Mock: Implement `test/mocks/mockGemini.ts` for deterministic offline testing without requiring live API keys.
+
+### R4. Automated Test Suite & Simulation Harness (Milestones 2-4)
+Provide a comprehensive automated verification harness that can run in CI or local environments without requiring live external secrets or external servers:
+- Implement `test/harness/simulationHarness.ts` integrating mock Discord, mock Minecraft, and mock Gemini.
+- Build test suites covering Tiers 1-4 and maintain 100% pass rate across all suites.
+- End-to-end integration test validating: simulated user voice/text prompt -> Gemini tool call invocation -> simulated Minecraft agent action execution -> Discord response confirmation.
+- Ensure `npm test` and `npm run build` pass cleanly with 0 errors.
+
+## Acceptance Criteria
+- [ ] Project builds cleanly (`npm run build`) with TypeScript type checks passing without errors.
+- [ ] 100% of all unit, integration, and E2E tests pass via `npm test`.
+- [ ] Minecraft agent strictly enforces fair-play reach ($\le 4.5$m), line-of-sight exposure, and blocks OP commands.
+- [ ] Automated survival loops (eat, sleep, equip) trigger reliably based on in-game state changes.
+- [ ] Gemini planner parses goals into valid tool calls and executes them against the Minecraft agent.
+- [ ] Mock harness validates the complete pipeline end-to-end without requiring live API keys or external servers.
+- [ ] `.env.example` and `README.md` are completely updated.

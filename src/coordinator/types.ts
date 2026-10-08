@@ -1,20 +1,7 @@
 import type { MinecraftBotStatus, MinecraftConnectionConfig } from '../minecraft/types.js';
 import type { AudioPriority } from '../audio/types.js';
 
-export interface PlanningContext {
-  botStatus: MinecraftBotStatus;
-  userPrompt: string;
-  source: 'discord_text' | 'discord_slash' | 'discord_voice';
-  senderTag?: string;
-}
-
-export interface PlannerStepEvent {
-  type: 'thought' | 'tool_call' | 'tool_result' | 'progress' | 'error' | 'done';
-  toolName?: string;
-  toolArgs?: Record<string, unknown>;
-  message?: string;
-  result?: unknown;
-}
+export type { PlanningContext, PlannerStepEvent } from '../ai/types.js';
 
 export interface CoordinatorVoicePrompt {
   userId: string;
