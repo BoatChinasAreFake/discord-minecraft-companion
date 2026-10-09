@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
-import type { AppConfig } from './types.js';
+import type { AppConfig, AIProvider } from './types.js';
 
 // Load .env file into process.env if present
 dotenv.config();
@@ -40,8 +40,32 @@ export const EnvSchema = z.object({
   MINECRAFT_VERSION: z.string().default('1.20.4'),
   MINECRAFT_AUTH: z.enum(['offline', 'microsoft']).default('offline'),
 
-  // Gemini AI
-  GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
+  // Multi-Provider AI Configuration
+  AI_PROVIDER: z.enum([
+    'gemini',
+    'openrouter',
+    'openai',
+    'deepseek',
+    'ollama',
+    'lmstudio',
+    'local',
+    'custom'
+  ]).default('gemini'),
+  AI_MODEL: z.string().optional(),
+  AI_API_KEY: z.string().optional(),
+  AI_BASE_URL: z.string().optional(),
+  AI_MAX_TOOL_STEPS: z.coerce.number().int().min(1).max(20).optional(),
+  AI_TEMPERATURE: z.coerce.number().min(0).max(2).optional(),
+
+  // Provider-specific credentials
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENAI_API_KEY: z.string().optional(),
+  DEEPSEEK_API_KEY: z.string().optional(),
+  OLLAMA_BASE_URL: z.string().optional(),
+  LMSTUDIO_BASE_URL: z.string().optional(),
+
+  // Gemini AI (Backward compatibility)
+  GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().default('gemini-3.8-flash'),
   GEMINI_MAX_TOOL_STEPS: z.coerce.number().int().min(1).max(20).default(5),
 
@@ -63,10 +87,47 @@ export const EnvSchema = z.object({
     .transform((val) => val === 'true')
 });
 
+function getDefaultModel(provider: AIProvider): string {
+  switch (provider) {
+    case 'gemini':
+      return 'gemini-3.8-flash';
+    case 'openrouter':
+      return 'anthropic/claude-3.5-sonnet';
+    case 'openai':
+      return 'gpt-4o';
+    case 'deepseek':
+      return 'deepseek-chat';
+    case 'ollama':
+    case 'local':
+      return 'llama3.1';
+    case 'lmstudio':
+      return 'local-model';
+    case 'custom':
+      return 'default-model';
+  }
+}
+
+function getDefaultBaseUrl(provider: AIProvider): string | undefined {
+  switch (provider) {
+    case 'openrouter':
+      return 'https://openrouter.ai/api/v1';
+    case 'openai':
+      return 'https://api.openai.com/v1';
+    case 'deepseek':
+      return 'https://api.deepseek.com/v1';
+    case 'ollama':
+    case 'local':
+      return 'http://localhost:11434/v1';
+    case 'lmstudio':
+      return 'http://localhost:1234/v1';
+    default:
+      return undefined;
+  }
+}
+
 export function loadConfig(overrides?: NodeJS.ProcessEnv): AppConfig {
   const envToValidate = overrides || process.env;
 
-  // In test mode with MOCK_ALL enabled, inject fallbacks for required secrets if missing
   const isTestOrMock =
     envToValidate.NODE_ENV === 'test' ||
     envToValidate.MOCK_ALL === 'true';
@@ -76,7 +137,18 @@ export function loadConfig(overrides?: NodeJS.ProcessEnv): AppConfig {
     if (!merged.DISCORD_BOT_TOKEN) merged.DISCORD_BOT_TOKEN = 'mock_discord_bot_token';
     if (!merged.DISCORD_CLIENT_ID) merged.DISCORD_CLIENT_ID = '123456789012345678';
     if (!merged.DISCORD_CHAT_BRIDGE_CHANNEL_ID) merged.DISCORD_CHAT_BRIDGE_CHANNEL_ID = '123456789012345679';
-    if (!merged.GEMINI_API_KEY) merged.GEMINI_API_KEY = 'mock_gemini_api_key';
+    if (!merged.GEMINI_API_KEY && !merged.AI_API_KEY) {
+      merged.GEMINI_API_KEY = 'mock_gemini_api_key';
+      merged.AI_API_KEY = 'mock_ai_api_key';
+    }
+  }
+
+  // Cross-fill API key between GEMINI_API_KEY and AI_API_KEY
+  if (!merged.GEMINI_API_KEY && merged.AI_API_KEY) {
+    merged.GEMINI_API_KEY = merged.AI_API_KEY;
+  }
+  if (!merged.AI_API_KEY && merged.GEMINI_API_KEY) {
+    merged.AI_API_KEY = merged.GEMINI_API_KEY;
   }
 
   const result = EnvSchema.safeParse(merged);
@@ -89,6 +161,38 @@ export function loadConfig(overrides?: NodeJS.ProcessEnv): AppConfig {
   }
 
   const data = result.data;
+
+  // Determine effective provider, API key, model, and baseUrl
+  const provider = data.AI_PROVIDER;
+  const effectiveModel = data.AI_MODEL || (provider === 'gemini' ? data.GEMINI_MODEL : getDefaultModel(provider));
+  
+  let effectiveApiKey = data.AI_API_KEY;
+  if (!effectiveApiKey) {
+    if (provider === 'openrouter') effectiveApiKey = data.OPENROUTER_API_KEY;
+    else if (provider === 'openai') effectiveApiKey = data.OPENAI_API_KEY;
+    else if (provider === 'deepseek') effectiveApiKey = data.DEEPSEEK_API_KEY;
+    else if (provider === 'gemini') effectiveApiKey = data.GEMINI_API_KEY;
+    else if (provider === 'ollama' || provider === 'local' || provider === 'lmstudio') {
+      effectiveApiKey = 'local-dummy-key';
+    }
+  }
+
+  // If still no API key for non-local providers, fallback to mock if in test, else throw
+  if (!effectiveApiKey && provider !== 'ollama' && provider !== 'local' && provider !== 'lmstudio') {
+    if (isTestOrMock) {
+      effectiveApiKey = `mock_${provider}_api_key`;
+    } else {
+      throw new Error(`API key is required for AI provider '${provider}'. Set AI_API_KEY or provider-specific key.`);
+    }
+  }
+
+  const effectiveBaseUrl =
+    data.AI_BASE_URL ||
+    (provider === 'ollama' ? data.OLLAMA_BASE_URL : undefined) ||
+    (provider === 'lmstudio' ? data.LMSTUDIO_BASE_URL : undefined) ||
+    getDefaultBaseUrl(provider);
+
+  const maxToolSteps = data.AI_MAX_TOOL_STEPS ?? data.GEMINI_MAX_TOOL_STEPS;
 
   return {
     discord: {
@@ -113,8 +217,16 @@ export function loadConfig(overrides?: NodeJS.ProcessEnv): AppConfig {
       version: data.MINECRAFT_VERSION,
       auth: data.MINECRAFT_AUTH
     },
+    ai: {
+      provider,
+      model: effectiveModel,
+      apiKey: effectiveApiKey,
+      baseUrl: effectiveBaseUrl,
+      maxToolSteps,
+      temperature: data.AI_TEMPERATURE ?? 0.2
+    },
     gemini: {
-      apiKey: data.GEMINI_API_KEY,
+      apiKey: effectiveApiKey || data.GEMINI_API_KEY || 'mock_gemini_api_key',
       model: data.GEMINI_MODEL,
       maxToolSteps: data.GEMINI_MAX_TOOL_STEPS
     },

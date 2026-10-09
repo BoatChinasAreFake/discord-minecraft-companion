@@ -1,8 +1,10 @@
 /**
- * Interface contracts for Gemini AI Planning & Coordination Bridge.
+ * Interface contracts for AI Planning & Coordination Bridge.
  *
  * Defines tool call requests, turn responses, live/mock interchangeable client
  * and session interfaces, planning context, and step events.
+ * Supports Google Gemini, OpenRouter, OpenAI/ChatGPT, DeepSeek, Anthropic Claude,
+ * and local models (Ollama, LM Studio, vLLM).
  */
 
 import type { MinecraftBotStatus, ActionResult } from '../minecraft/types.js';
@@ -18,11 +20,15 @@ export interface GeminiTurnResponse {
   toolCalls?: ToolCallRequest[];
 }
 
+export type AITurnResponse = GeminiTurnResponse;
+
 export interface IGeminiSession {
   sendUserMessage(prompt: string, signal?: AbortSignal): Promise<GeminiTurnResponse>;
   sendToolResponse(toolName: string, result: unknown, callId?: string, signal?: AbortSignal): Promise<GeminiTurnResponse>;
   getHistory(): unknown[];
 }
+
+export type IAISession = IGeminiSession;
 
 export interface CreateSessionOptions {
   systemInstruction?: string;
@@ -33,6 +39,8 @@ export interface CreateSessionOptions {
 export interface IGeminiClient {
   createSession(options?: CreateSessionOptions): Promise<IGeminiSession>;
 }
+
+export type IAIClient = IGeminiClient;
 
 export interface PlanningContext {
   botStatus: MinecraftBotStatus;
@@ -62,3 +70,5 @@ export interface IGeminiPlanner {
   cancelCurrentGoal(): void;
   isExecuting(): boolean;
 }
+
+export type IAIPlanner = IGeminiPlanner;

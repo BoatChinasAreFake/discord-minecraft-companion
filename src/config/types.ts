@@ -1,3 +1,22 @@
+export type AIProvider =
+  | 'gemini'
+  | 'openrouter'
+  | 'openai'
+  | 'deepseek'
+  | 'ollama'
+  | 'lmstudio'
+  | 'local'
+  | 'custom';
+
+export interface AIProviderConfig {
+  provider: AIProvider;
+  model: string;
+  apiKey?: string;
+  baseUrl?: string;
+  maxToolSteps: number;
+  temperature?: number;
+}
+
 export interface AppConfig {
   discord: {
     token: string;
@@ -21,6 +40,7 @@ export interface AppConfig {
     version: string;
     auth: 'offline' | 'microsoft';
   };
+  ai: AIProviderConfig;
   gemini: {
     apiKey: string;
     model: string;

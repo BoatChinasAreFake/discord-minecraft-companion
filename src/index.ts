@@ -20,6 +20,8 @@ export * from './ai/types.js';
 export * from './ai/tools/definitions.js';
 export * from './ai/tools/validator.js';
 export * from './ai/geminiClient.js';
+export * from './ai/openAICompatibleClient.js';
+export * from './ai/factory.js';
 export * from './ai/planner.js';
 export * from './coordinator/progressReporter.js';
 export * from './coordinator/agentCoordinator.js';

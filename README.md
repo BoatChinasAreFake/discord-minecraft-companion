@@ -99,13 +99,67 @@ A decoupled multimodal Discord bot and fair-play Minecraft Java survival compani
   - *Auto-Sleep Loop*: Sleeps during night (12541-23458) and thunderstorms, enforces 8m/5m monster exclusion AABB.
   - *Auto-Equip Loop*: Evaluates composite defense score to automatically equip optimal armor and weapons.
 
-### 6. Gemini AI Planning Bridge
-- **Official Google Gemini SDK**: Uses `@google/genai` (>= 2.3.0) configured for `gemini-3.8-flash`.
-- **9 Fair-Play Tools**: `goToCoordinates`, `followPlayer`, `gatherResource`, `defendArea`, `reportStatus`, `stopCurrentTask`, `craftItem`, `sleepInBed`, `depositOrRetrieve`.
-- **Fair-Play Parameter Validation**: Runtime interceptor validates tool parameters against survival boundaries.
-- **Multi-Turn Execution**: Asynchronous generator streaming step progress and tool results to Discord text and voice.
+### 6. Multi-Provider AI Planning Engine (Gemini, OpenRouter, Claude, DeepSeek, ChatGPT & Local Models)
+The bot features a decoupled, multi-provider AI architecture supporting all major cloud and local LLMs through either the Google Gemini SDK or OpenAI-compatible tool-calling:
+- **Supported Providers:**
+  - **Google Gemini**: Native SDK via `@google/genai` (default: `gemini-3.8-flash`).
+  - **OpenRouter**: Access Claude 3.5 Sonnet, DeepSeek V3/R1, Llama 3.3, Mistral, and more via `https://openrouter.ai/api/v1`.
+  - **OpenAI / ChatGPT**: Native OpenAI API (`gpt-4o`, `gpt-4o-mini`, `o1`, `o3-mini`).
+  - **DeepSeek**: High-performance reasoning and chat (`deepseek-chat`, `deepseek-reasoner`).
+  - **Local Models (Ollama, LM Studio, vLLM, LocalAI)**: Zero-cloud, 100% private local execution (e.g. `http://localhost:11434/v1` for Ollama).
+  - **Custom Endpoints**: Any user-defined OpenAI-compatible proxy or model gateway.
+- **9 Fair-Play Survival Tools**: `goToCoordinates`, `followPlayer`, `gatherResource`, `defendArea`, `reportStatus`, `stopCurrentTask`, `craftItem`, `sleepInBed`, `depositOrRetrieve`.
+- **Runtime Validation**: Interceptor strictly validates tool arguments against survival reach, FOV, and anti-cheat boundaries regardless of the underlying LLM.
+- **Multi-Turn Planning**: Asynchronous generator streaming step progress and tool results to Discord text and voice.
 
 ---
+
+### Multi-Model Configuration Guide
+
+Simply set `AI_PROVIDER` and the corresponding credentials in your `.env`:
+
+#### 1. OpenRouter (Claude, DeepSeek, Llama, etc.)
+```env
+AI_PROVIDER=openrouter
+AI_MODEL=anthropic/claude-3.5-sonnet
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
+```
+
+#### 2. OpenAI (ChatGPT / GPT-4o)
+```env
+AI_PROVIDER=openai
+AI_MODEL=gpt-4o
+OPENAI_API_KEY=sk-proj-your-key-here
+```
+
+#### 3. DeepSeek
+```env
+AI_PROVIDER=deepseek
+AI_MODEL=deepseek-chat
+DEEPSEEK_API_KEY=sk-your-deepseek-key-here
+```
+
+#### 4. Local Models via Ollama (Zero Cost / Private)
+```env
+AI_PROVIDER=ollama
+AI_MODEL=llama3.1
+AI_BASE_URL=http://localhost:11434/v1
+```
+
+#### 5. Local Models via LM Studio
+```env
+AI_PROVIDER=lmstudio
+AI_MODEL=local-model
+AI_BASE_URL=http://localhost:1234/v1
+```
+
+#### 6. Google Gemini (Default)
+```env
+AI_PROVIDER=gemini
+AI_MODEL=gemini-3.8-flash
+GEMINI_API_KEY=AIzaSyYourGeminiApiKeyHere
+```
+
 
 ## Prerequisites
 
