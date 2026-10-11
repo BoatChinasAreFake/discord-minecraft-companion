@@ -197,7 +197,7 @@ export class SimulationHarness {
         host: 'localhost',
         port: 25565,
         username: 'MockSurvivalBot',
-        version: '1.20.4',
+        version: '1.21.11',
         auth: 'offline',
       },
       gemini: {

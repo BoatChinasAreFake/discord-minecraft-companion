@@ -184,6 +184,7 @@ describe('Slash Commands Subsystem (src/discord/commands/)', () => {
       host: 'mc.example.com',
       port: 25565,
       username: 'MinerBot',
+      version: '1.21.11',
     });
     expect(interaction.editReply).toHaveBeenCalledWith(
       expect.objectContaining({ content: expect.stringContaining('Successfully initiated connection') })

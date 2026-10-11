@@ -161,7 +161,7 @@ function createTestRbacConfig(): AppConfig {
       host: 'localhost',
       port: 25565,
       username: 'Bot',
-      version: '1.20.4',
+      version: '1.21.11',
       auth: 'offline',
     },
     gemini: {
@@ -243,6 +243,7 @@ describe('Tier 1: Discord Subsystem Feature Coverage (F01-F03, F09-F15)', () => 
         host: 'mc.hypixel.net',
         port: 25565,
         username: 'Player1',
+        version: '1.21.11',
       });
       expect(interaction.editReply).toHaveBeenCalled();
       expect(interaction.editReplyPayload.content).toContain('Successfully initiated connection');

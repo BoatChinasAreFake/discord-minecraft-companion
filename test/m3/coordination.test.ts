@@ -76,7 +76,7 @@ describe('Milestone 3: Agent Coordination & Progress Reporting', () => {
         host: 'localhost',
         port: 25565,
         username: 'CoordBot',
-        version: '1.20.4',
+        version: '1.21.11',
         auth: 'offline',
       },
       gemini: {

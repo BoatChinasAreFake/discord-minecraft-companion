@@ -77,7 +77,7 @@ describe('Tier 1: Coordinator & Cross-Cutting Feature Coverage (F08, F40-F41)', 
         host: 'localhost',
         port: 25565,
         username: 'CoordBot',
-        version: '1.20.4',
+        version: '1.21.11',
         auth: 'offline',
       },
       gemini: {
