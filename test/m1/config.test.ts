@@ -16,6 +16,7 @@ describe('Configuration Subsystem (src/config/)', () => {
     expect(config.discord.clientId).toBe('123456789012345678');
     expect(config.minecraft.host).toBe('localhost');
     expect(config.minecraft.port).toBe(25565);
+    expect(config.minecraft.version).toBe('1.21.11');
     expect(config.gemini.model).toBe('gemini-3.8-flash');
     expect(config.status.embedIntervalSec).toBe(5);
     expect(config.runtime.mockAll).toBe(true);

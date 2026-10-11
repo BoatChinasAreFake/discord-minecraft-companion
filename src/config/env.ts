@@ -37,7 +37,7 @@ export const EnvSchema = z.object({
   MINECRAFT_HOST: z.string().default('localhost'),
   MINECRAFT_PORT: z.coerce.number().int().min(1).max(65535).default(25565),
   MINECRAFT_USERNAME: z.string().min(1).default('DiscordSurvivalBot'),
-  MINECRAFT_VERSION: z.string().default('1.20.4'),
+  MINECRAFT_VERSION: z.string().default('1.21.11'),
   MINECRAFT_AUTH: z.enum(['offline', 'microsoft']).default('offline'),
 
   // Gemini AI

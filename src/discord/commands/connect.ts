@@ -21,6 +21,9 @@ export const connectCommand: CommandDefinition = {
     )
     .addStringOption((opt) =>
       opt.setName('username').setDescription('In-game bot player username').setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName('version').setDescription('Target Minecraft version (e.g. 1.21.11, auto)').setRequired(false)
     ),
   async execute(interaction: ChatInputCommandInteraction, context: CommandContext): Promise<void> {
     const current = context.coordinator.getMinecraftStatus();
@@ -37,10 +40,11 @@ export const connectCommand: CommandDefinition = {
     const host = interaction.options.getString('host') || 'localhost';
     const port = interaction.options.getInteger('port') || 25565;
     const username = interaction.options.getString('username') || 'DiscordSurvivalBot';
+    const version = interaction.options.getString('version') || '1.21.11';
 
-    await context.coordinator.connectMinecraft({ host, port, username });
+    await context.coordinator.connectMinecraft({ host, port, username, version });
 
-    const replyMsg = `✅ Successfully initiated connection to ${host}:${port} as ${username}.`;
+    const replyMsg = `✅ Successfully initiated connection to ${host}:${port} as ${username} (v${version}).`;
     if (interaction.deferred || interaction.replied) {
       await interaction.editReply({ content: replyMsg });
     } else {
